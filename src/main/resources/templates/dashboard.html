@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - NoteOrg</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',sans-serif;background:#f1f5f9;color:#1e293b;display:flex;min-height:100vh}
+        .sidebar{width:260px;background:#1e1b4b;color:white;display:flex;flex-direction:column;padding:24px 16px;position:fixed;height:100vh;overflow-y:auto}
+        .logo{display:flex;align-items:center;gap:10px;padding:8px 12px;margin-bottom:32px}
+        .logo-icon{width:36px;height:36px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px}
+        .logo-text{font-size:18px;font-weight:700;color:white}
+        .nav-section{font-size:11px;font-weight:600;color:#6366f1;text-transform:uppercase;letter-spacing:1px;padding:8px 12px;margin-top:16px}
+        .nav-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;transition:all 0.2s;margin-bottom:2px}
+        .nav-item:hover,.nav-item.active{background:#312e81;color:white}
+        .sidebar-footer{margin-top:auto;padding-top:16px;border-top:1px solid #312e81}
+        .user-info{display:flex;align-items:center;gap:10px;padding:10px 12px}
+        .avatar{width:36px;height:36px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:white;flex-shrink:0}
+        .user-name{font-size:13px;font-weight:600;color:white}
+        .user-email{font-size:11px;color:#6366f1}
+        .logout-btn{background:none;border:none;color:#94a3b8;cursor:pointer;padding:8px;border-radius:6px;font-size:13px;width:100%;text-align:left;margin-top:8px;transition:all 0.2s}
+        .logout-btn:hover{background:#312e81;color:white}
+        .main{margin-left:260px;padding:32px;flex:1}
+        .page-header{margin-bottom:28px;display:flex;justify-content:space-between;align-items:center}
+        .page-header h1{font-size:24px;font-weight:800;color:#1e293b}
+        .page-header p{color:#64748b;font-size:14px;margin-top:4px}
+        .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all 0.2s;text-decoration:none}
+        .btn-primary{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white}
+        .btn-primary:hover{opacity:0.9;transform:translateY(-1px)}
+        .btn-sm{padding:6px 14px;font-size:13px}
+        .btn-secondary{background:white;color:#1e293b;border:1px solid #e2e8f0}
+        /* Stats */
+        .stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:28px}
+        .stat-card{border-radius:14px;padding:20px;position:relative;overflow:hidden;color:white}
+        .stat-card.purple{background:linear-gradient(135deg,#6366f1,#8b5cf6)}
+        .stat-card.blue{background:linear-gradient(135deg,#3b82f6,#06b6d4)}
+        .stat-card.green{background:linear-gradient(135deg,#10b981,#059669)}
+        .stat-card.pink{background:linear-gradient(135deg,#ec4899,#f43f5e)}
+        .stat-card.orange{background:linear-gradient(135deg,#f59e0b,#ef4444)}
+        .stat-bg{position:absolute;right:-10px;top:-10px;font-size:60px;opacity:0.15}
+        .stat-label{font-size:12px;font-weight:600;opacity:0.85;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px}
+        .stat-value{font-size:32px;font-weight:800}
+        .stat-sub{font-size:12px;opacity:0.75;margin-top:4px}
+        /* Two column layout */
+        .dashboard-grid{display:grid;grid-template-columns:1fr 360px;gap:24px}
+        /* Notes section */
+        .section-card{background:white;border-radius:16px;padding:24px;border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+        .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+        .section-title{font-size:16px;font-weight:700;color:#1e293b;display:flex;align-items:center;gap:8px}
+        .view-all{font-size:13px;color:#6366f1;font-weight:600;text-decoration:none}
+        .view-all:hover{text-decoration:underline}
+        .notes-list{display:flex;flex-direction:column;gap:12px}
+        .note-item{padding:14px 16px;border-radius:10px;border:1px solid #e2e8f0;transition:all 0.2s;cursor:pointer;display:flex;gap:14px;align-items:flex-start}
+        .note-item:hover{border-color:#6366f1;box-shadow:0 2px 8px rgba(99,102,241,0.1)}
+        .note-color-bar{width:4px;border-radius:4px;flex-shrink:0;align-self:stretch;min-height:40px}
+        .note-item:nth-child(1) .note-color-bar{background:#6366f1}
+        .note-item:nth-child(2) .note-color-bar{background:#3b82f6}
+        .note-item:nth-child(3) .note-color-bar{background:#10b981}
+        .note-item:nth-child(4) .note-color-bar{background:#ec4899}
+        .note-item:nth-child(5) .note-color-bar{background:#f59e0b}
+        .note-content{flex:1;min-width:0}
+        .note-title{font-size:14px;font-weight:600;color:#1e293b;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .note-excerpt{font-size:12px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:8px}
+        .note-meta{display:flex;gap:8px;align-items:center}
+        .note-tag{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:#ede9fe;color:#6366f1}
+        .note-date{font-size:11px;color:#94a3b8}
+        /* Tasks section */
+        .tasks-section{display:flex;flex-direction:column;gap:16px}
+        .task-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:4px}
+        .task-stat{padding:14px;border-radius:10px;text-align:center}
+        .task-stat.pending{background:#fef3c7;border:1px solid #fde68a}
+        .task-stat.done{background:#d1fae5;border:1px solid #a7f3d0}
+        .task-stat-num{font-size:24px;font-weight:800}
+        .task-stat.pending .task-stat-num{color:#d97706}
+        .task-stat.done .task-stat-num{color:#059669}
+        .task-stat-label{font-size:11px;font-weight:600;color:#64748b;margin-top:2px}
+        .task-list{display:flex;flex-direction:column;gap:8px}
+        .task-item{padding:12px 14px;border-radius:10px;border:1px solid #e2e8f0;display:flex;align-items:center;gap:12px;transition:all 0.2s}
+        .task-item:hover{box-shadow:0 2px 8px rgba(0,0,0,0.08)}
+        .task-item.priority-high{border-left:4px solid #ef4444}
+        .task-item.priority-medium{border-left:4px solid #f59e0b}
+        .task-item.priority-low{border-left:4px solid #10b981}
+        .task-check{width:20px;height:20px;border-radius:50%;border:2px solid #cbd5e1;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:12px;transition:all 0.2s}
+        .task-check:hover{border-color:#6366f1;background:#ede9fe}
+        .task-info{flex:1;min-width:0}
+        .task-title{font-size:13px;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .task-due{font-size:11px;margin-top:2px}
+        .task-due.overdue{color:#ef4444;font-weight:600}
+        .task-due.today{color:#f59e0b;font-weight:600}
+        .task-due.upcoming{color:#64748b}
+        .task-delete{background:none;border:none;cursor:pointer;color:#cbd5e1;font-size:14px;padding:4px;border-radius:4px;transition:all 0.2s;text-decoration:none}
+        .task-delete:hover{color:#ef4444;background:#fee2e2}
+        .priority-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;text-transform:uppercase}
+        .priority-badge.high{background:#fee2e2;color:#ef4444}
+        .priority-badge.medium{background:#fef3c7;color:#d97706}
+        .priority-badge.low{background:#d1fae5;color:#059669}
+        /* Subject stats */
+        .subject-stats{display:flex;flex-direction:column;gap:8px}
+        .subject-bar-item{display:flex;align-items:center;gap:12px}
+        .subject-bar-name{font-size:13px;font-weight:500;color:#1e293b;width:100px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .subject-bar-track{flex:1;height:8px;background:#f1f5f9;border-radius:4px;overflow:hidden}
+        .subject-bar-fill{height:100%;border-radius:4px}
+        .subject-bar-count{font-size:12px;font-weight:600;color:#64748b;width:24px;text-align:right}
+        /* Modal */
+        .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+        .modal-overlay.open{display:flex}
+        .modal{background:white;border-radius:16px;padding:32px;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,0.2)}
+        .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+        .modal-title{font-size:20px;font-weight:700}
+        .close-btn{background:none;border:none;font-size:20px;cursor:pointer;color:#64748b}
+        .form-group{margin-bottom:16px}
+        .form-label{display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px}
+        .form-control{width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;color:#1e293b;transition:border-color 0.2s}
+        .form-control:focus{outline:none;border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,0.1)}
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        .color-picker{display:flex;gap:8px;flex-wrap:wrap}
+        .color-btn{width:28px;height:28px;border-radius:50%;border:3px solid transparent;cursor:pointer;transition:all 0.2s}
+        .color-btn:hover,.color-btn.selected{border-color:#1e293b;transform:scale(1.15)}
+        .empty-tasks{text-align:center;padding:32px 16px;color:#94a3b8}
+        .empty-tasks p{font-size:13px;margin-top:8px}
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-icon">N</div>
+            <span class="logo-text">NoteOrg</span>
+        </div>
+        <div class="nav-section">Main Menu</div>
+        <a th:href="@{/dashboard}" class="nav-item active">
+            <span>🏠</span> Dashboard
+        </a>
+        <a th:href="@{/notes}" class="nav-item">
+            <span>📝</span> My Notes
+        </a>
+        <div class="nav-section">Organize</div>
+        <a th:href="@{/subjects}" class="nav-item">
+            <span>📚</span> Subjects
+        </a>
+        <a th:href="@{/tags}" class="nav-item">
+            <span>🏷️</span> Tags
+        </a>
+        <div class="nav-section">Account</div>
+        <a th:href="@{/profile}" class="nav-item">
+            <span>⚙️</span> Settings
+        </a>
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="avatar" th:text="${#strings.substring(user.name,0,1)}">U</div>
+                <div>
+                    <div class="user-name" th:text="${user.name}">User</div>
+                    <div class="user-email" th:text="${user.email}">email</div>
+                </div>
+            </div>
+            <form th:action="@{/logout}" method="post">
+                <button type="submit" class="logout-btn">🚪 Logout</button>
+            </form>
+        </div>
+    </aside>
+
+    <main class="main">
+        <!-- Header -->
+        <div class="page-header">
+            <div>
+                <h1>Good day, <span th:text="${user.name}">User</span>! 👋</h1>
+                <p>Here's your study overview for today</p>
+            </div>
+            <button onclick="openModal('taskModal')" class="btn btn-primary">+ Add Task</button>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card purple">
+                <div class="stat-bg">📝</div>
+                <div class="stat-label">Total Notes</div>
+                <div class="stat-value" th:text="${stats.total_notes}">0</div>
+                <div class="stat-sub">All your notes</div>
+            </div>
+            <div class="stat-card blue">
+                <div class="stat-bg">📚</div>
+                <div class="stat-label">Subjects</div>
+                <div class="stat-value" th:text="${stats.total_subjects}">0</div>
+                <div class="stat-sub">Categories</div>
+            </div>
+            <div class="stat-card green">
+                <div class="stat-bg">⭐</div>
+                <div class="stat-label">Favorites</div>
+                <div class="stat-value" th:text="${stats.total_favorites}">0</div>
+                <div class="stat-sub">Starred notes</div>
+            </div>
+            <div class="stat-card pink">
+                <div class="stat-bg">✅</div>
+                <div class="stat-label">Pending Tasks</div>
+                <div class="stat-value" th:text="${pendingTasks}">0</div>
+                <div class="stat-sub">To complete</div>
+            </div>
+            <div class="stat-card orange">
+                <div class="stat-bg">🎯</div>
+                <div class="stat-label">Done Tasks</div>
+                <div class="stat-value" th:text="${completedTasks}">0</div>
+                <div class="stat-sub">Completed</div>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="dashboard-grid">
+
+            <!-- LEFT: Notes + Subject Stats -->
+            <div style="display:flex;flex-direction:column;gap:24px">
+
+                <!-- Recent Notes -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-title">📝 Recent Notes</div>
+                        <a th:href="@{/notes}" class="view-all">View all →</a>
+                    </div>
+                    <div class="notes-list" th:if="${not #lists.isEmpty(recentNotes)}">
+                        <div th:each="note : ${recentNotes}" class="note-item">
+                            <div class="note-color-bar"></div>
+                            <div class="note-content">
+                                <div class="note-title" th:text="${note.title}">Title</div>
+                                <div class="note-excerpt" th:text="${note.content != null ? note.content : 'No content'}">Content</div>
+                                <div class="note-meta">
+                                    <span class="note-tag" th:text="${note.subject != null ? note.subject.name : 'General'}">Subject</span>
+                                    <span class="note-date" th:text="${#temporals.format(note.updatedAt, 'MMM d, yyyy')}">Date</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="text-align:center;padding:40px;color:#94a3b8" th:if="${#lists.isEmpty(recentNotes)}">
+                        <p style="font-size:36px">📭</p>
+                        <p style="margin-top:8px;font-size:13px">No notes yet</p>
+                        <a th:href="@{/notes}" class="btn btn-primary btn-sm" style="margin-top:12px">Create Note</a>
+                    </div>
+                </div>
+
+                <!-- Notes by Subject -->
+                <div class="section-card" th:if="${not #lists.isEmpty(subjects)}">
+                    <div class="section-header">
+                        <div class="section-title">📊 Notes by Subject</div>
+                        <a th:href="@{/subjects}" class="view-all">Manage →</a>
+                    </div>
+                    <div class="subject-stats">
+                        <div th:each="subject, iter : ${subjects}" class="subject-bar-item">
+                            <div class="subject-bar-name" th:text="${subject.name}">Subject</div>
+                            <div class="subject-bar-track">
+                                <div class="subject-bar-fill"
+                                     th:style="'width:' + (${stats.total_notes} > 0 ? '60' : '0') + '%;background:' + (${iter.index} % 5 == 0 ? '#6366f1' : ${iter.index} % 5 == 1 ? '#3b82f6' : ${iter.index} % 5 == 2 ? '#10b981' : ${iter.index} % 5 == 3 ? '#ec4899' : '#f59e0b')">
+                                </div>
+                            </div>
+                            <div class="subject-bar-count">-</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT: Tasks -->
+            <div class="section-card">
+                <div class="section-header">
+                    <div class="section-title">✅ Tasks & Reminders</div>
+                    <button onclick="openModal('taskModal')" class="btn btn-primary btn-sm">+ Add</button>
+                </div>
+
+                <!-- Task Stats -->
+                <div class="task-stats">
+                    <div class="task-stat pending">
+                        <div class="task-stat-num" th:text="${pendingTasks}">0</div>
+                        <div class="task-stat-label">Pending</div>
+                    </div>
+                    <div class="task-stat done">
+                        <div class="task-stat-num" th:text="${completedTasks}">0</div>
+                        <div class="task-stat-label">Completed</div>
+                    </div>
+                </div>
+
+                <!-- Task List -->
+                <div class="task-list" th:if="${not #lists.isEmpty(tasks)}" style="margin-top:16px">
+                    <div th:each="task : ${tasks}"
+                         th:class="'task-item priority-' + ${task.priority}">
+                        <a th:href="@{/tasks/complete/{id}(id=${task.id})}" class="task-check" title="Mark complete">○</a>
+                        <div class="task-info">
+                            <div class="task-title" th:text="${task.title}">Task</div>
+                            <div th:if="${task.dueDate != null}"
+                                 th:class="'task-due ' + (${task.dueDate.isBefore(T(java.time.LocalDate).now())} ? 'overdue' : (${task.dueDate.isEqual(T(java.time.LocalDate).now())} ? 'today' : 'upcoming'))"
+                                 th:text="${task.dueDate.isBefore(T(java.time.LocalDate).now())} ? 'Overdue: ' + ${#temporals.format(task.dueDate, 'MMM d')} : (${task.dueDate.isEqual(T(java.time.LocalDate).now())} ? 'Due Today!' : 'Due: ' + ${#temporals.format(task.dueDate, 'MMM d')})">
+                            </div>
+                        </div>
+                        <span th:class="'priority-badge ' + ${task.priority}" th:text="${task.priority}">med</span>
+                        <a th:href="@{/tasks/delete/{id}(id=${task.id})}" class="task-delete" title="Delete">✕</a>
+                    </div>
+                </div>
+
+                <div class="empty-tasks" th:if="${#lists.isEmpty(tasks)}">
+                    <p style="font-size:36px">🎯</p>
+                    <p>No pending tasks.<br>Add a task or reminder!</p>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Task Modal -->
+    <div class="modal-overlay" id="taskModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">✅ New Task / Reminder</div>
+                <button class="close-btn" onclick="closeModal('taskModal')">✕</button>
+            </div>
+            <form th:action="@{/tasks/save}" method="post">
+                <div class="form-group">
+                    <label class="form-label">Task Title *</label>
+                    <input type="text" name="title" class="form-control" placeholder="e.g. Study Chapter 5..." required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <input type="text" name="description" class="form-control" placeholder="Optional details...">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Due Date</label>
+                        <input type="date" name="dueDate" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Priority</label>
+                        <select name="priority" class="form-control">
+                            <option value="high">🔴 High</option>
+                            <option value="medium" selected>🟡 Medium</option>
+                            <option value="low">🟢 Low</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Color</label>
+                    <select name="color" class="form-control">
+                        <option value="purple">💜 Purple</option>
+                        <option value="blue">💙 Blue</option>
+                        <option value="green">💚 Green</option>
+                        <option value="pink">🩷 Pink</option>
+                        <option value="red">❤️ Red</option>
+                    </select>
+                </div>
+                <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:8px">
+                    <button type="button" onclick="closeModal('taskModal')" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openModal(id) { document.getElementById(id).classList.add('open'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+        window.addEventListener('click', e => {
+            document.querySelectorAll('.modal-overlay').forEach(m => {
+                if(e.target === m) m.classList.remove('open');
+            });
+        });
+    </script>
+</body>
+</html>

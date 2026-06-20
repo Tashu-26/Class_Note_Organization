@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Notes - NoteOrg</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',sans-serif;background:#f1f5f9;color:#1e293b;display:flex;min-height:100vh}
+        .sidebar{width:260px;background:#1e1b4b;color:white;display:flex;flex-direction:column;padding:24px 16px;position:fixed;height:100vh;overflow-y:auto}
+        .logo{display:flex;align-items:center;gap:10px;padding:8px 12px;margin-bottom:32px}
+        .logo-icon{width:36px;height:36px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px}
+        .logo-text{font-size:18px;font-weight:700;color:white}
+        .nav-section{font-size:11px;font-weight:600;color:#6366f1;text-transform:uppercase;letter-spacing:1px;padding:8px 12px;margin-top:16px}
+        .nav-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;transition:all 0.2s;margin-bottom:2px}
+        .nav-item:hover,.nav-item.active{background:#312e81;color:white}
+        .nav-item .icon{width:20px;text-align:center;font-size:16px}
+        .sidebar-footer{margin-top:auto;padding-top:16px;border-top:1px solid #312e81}
+        .user-info{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px}
+        .avatar{width:36px;height:36px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:white;flex-shrink:0}
+        .user-name{font-size:13px;font-weight:600;color:white}
+        .user-email{font-size:11px;color:#6366f1}
+        .logout-btn{background:none;border:none;color:#94a3b8;cursor:pointer;padding:8px;border-radius:6px;font-size:13px;width:100%;text-align:left;margin-top:8px;transition:all 0.2s}
+        .logout-btn:hover{background:#312e81;color:white}
+        .main{margin-left:260px;padding:32px;flex:1}
+        .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+        .page-header h1{font-size:24px;font-weight:700;color:#1e293b}
+        .page-header p{color:#64748b;font-size:14px;margin-top:4px}
+        .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all 0.2s;text-decoration:none}
+        .btn-primary{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white}
+        .btn-primary:hover{opacity:0.9;transform:translateY(-1px)}
+        .btn-secondary{background:white;color:#1e293b;border:1px solid #e2e8f0}
+        .btn-danger{background:#fee2e2;color:#ef4444;border:1px solid #fecaca}
+        .btn-sm{padding:6px 14px;font-size:13px}
+        .filter-bar{display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap;align-items:center}
+        .filter-chip{padding:6px 16px;border-radius:20px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid #e2e8f0;background:white;color:#64748b;text-decoration:none;transition:all 0.2s}
+        .filter-chip:hover,.filter-chip.active{background:#6366f1;color:white;border-color:#6366f1}
+        .notes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+        .note-card{background:white;border-radius:12px;padding:20px;border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,0.06);transition:all 0.2s;position:relative}
+        .note-card:hover{box-shadow:0 4px 12px rgba(99,102,241,0.15);border-color:#6366f1;transform:translateY(-2px)}
+        .note-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+        .note-title{font-size:15px;font-weight:600;color:#1e293b;flex:1}
+        .note-actions{display:flex;gap:6px;opacity:0;transition:opacity 0.2s}
+        .note-card:hover .note-actions{opacity:1}
+        .action-btn{background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:6px;font-size:14px;transition:all 0.2s}
+        .action-btn:hover{background:#f1f5f9}
+        .note-excerpt{font-size:13px;color:#64748b;line-height:1.6;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:16px;min-height:60px}
+        .note-footer{display:flex;justify-content:space-between;align-items:center}
+        .subject-tag{font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;background:#ede9fe;color:#6366f1}
+        .date-text{font-size:11px;color:#94a3b8}
+        .fav-badge{font-size:14px}
+        .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+        .modal-overlay.open{display:flex}
+        .modal{background:white;border-radius:16px;padding:32px;width:100%;max-width:560px;box-shadow:0 20px 60px rgba(0,0,0,0.2)}
+        .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+        .modal-title{font-size:20px;font-weight:700;color:#1e293b}
+        .close-btn{background:none;border:none;font-size:20px;cursor:pointer;color:#64748b;padding:4px;border-radius:6px}
+        .close-btn:hover{background:#f1f5f9}
+        .form-group{margin-bottom:16px}
+        .form-label{display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px}
+        .form-control{width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;color:#1e293b;transition:border-color 0.2s;background:white}
+        .form-control:focus{outline:none;border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,0.1)}
+        textarea.form-control{resize:vertical;min-height:120px}
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        .checkbox-label{display:flex;align-items:center;gap:8px;font-size:14px;color:#374151;cursor:pointer}
+        .empty-state{text-align:center;padding:80px 20px;background:white;border-radius:16px;border:2px dashed #e2e8f0;grid-column:1/-1}
+        .section-divider{display:flex;align-items:center;gap:12px;margin:24px 0 16px}
+        .section-divider h2{font-size:16px;font-weight:600;color:#1e293b;white-space:nowrap}
+        .section-divider::after{content:'';flex:1;height:1px;background:#e2e8f0}
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-icon">N</div>
+            <span class="logo-text">NoteOrg</span>
+        </div>
+        <div class="nav-section">Main Menu</div>
+        <a th:href="@{/dashboard}" class="nav-item">
+            <span class="icon">🏠</span> Dashboard
+        </a>
+        <a th:href="@{/notes}" class="nav-item active">
+            <span class="icon">📝</span> My Notes
+        </a>
+        <div class="nav-section">Organize</div>
+        <a th:href="@{/subjects}" class="nav-item">
+            <span class="icon">📚</span> Subjects
+        </a>
+       <a th:href="@{/tags}" class="nav-item">
+    <span>🏷️</span> Tags
+</a>
+      
+        <div class="nav-section">Account</div>
+<a th:href="@{/profile}" class="nav-item">
+    <span>⚙️</span> Settings
+</a>
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="avatar" th:text="${#strings.substring(user.name,0,1)}">U</div>
+                <div>
+                    <div class="user-name" th:text="${user.name}">User</div>
+                    <div class="user-email" th:text="${user.email}">email</div>
+                </div>
+            </div>
+            <form th:action="@{/logout}" method="post">
+                <button type="submit" class="logout-btn">🚪 Logout</button>
+            </form>
+        </div>
+    </aside>
+
+    <main class="main">
+        <div class="page-header">
+            <div>
+                <h1>📝 My Notes</h1>
+                <p th:text="${notes.size() + ' notes in your collection'}">0 notes</p>
+            </div>
+            <button onclick="openModal('noteModal')" class="btn btn-primary">+ New Note</button>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <a th:href="@{/notes}" class="filter-chip active">All Notes</a>
+            <a th:each="s : ${subjects}" th:href="@{/notes(subject=${s.id})}" class="filter-chip" th:text="${s.name}">Subject</a>
+            <button onclick="openModal('subjectModal')" class="btn btn-secondary btn-sm">+ Add Subject</button>
+        </div>
+
+        <!-- Notes Grid -->
+        <div class="notes-grid">
+            <div th:each="note : ${notes}" class="note-card">
+                <div class="note-card-header">
+                    <div class="note-title" th:text="${note.title}">Title</div>
+                    <div class="note-actions">
+                        <button class="action-btn" title="Delete"
+                            th:onclick="'confirmDelete(' + ${note.id} + ')'">🗑️</button>
+                    </div>
+                </div>
+                <div class="note-excerpt" th:text="${note.content}">Content</div>
+                <div class="note-footer">
+                    <span class="subject-tag" th:text="${note.subject != null ? note.subject.name : 'General'}">Subject</span>
+                    <div style="display:flex;align-items:center;gap:8px">
+                        <span class="fav-badge" th:if="${note.favorite}">⭐</span>
+                        <span class="date-text" th:text="${#temporals.format(note.updatedAt, 'MMM d, yyyy')}">Date</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="empty-state" th:if="${#lists.isEmpty(notes)}">
+                <p style="font-size:48px;margin-bottom:12px">📭</p>
+                <p style="color:#64748b;margin-bottom:16px">No notes yet. Create your first one!</p>
+                <button onclick="openModal('noteModal')" class="btn btn-primary">+ Create Note</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- New Note Modal -->
+    <div class="modal-overlay" id="noteModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">✏️ Create New Note</div>
+                <button class="close-btn" onclick="closeModal('noteModal')">✕</button>
+            </div>
+            <form th:action="@{/notes/save}" th:object="${note}" method="post">
+                <div class="form-group">
+                    <label class="form-label">Title *</label>
+                    <input type="text" th:field="*{title}" class="form-control" placeholder="Enter note title..." required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Content</label>
+                    <textarea th:field="*{content}" class="form-control" placeholder="Write your note here..."></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Subject</label>
+                        <select th:field="*{subject}" class="form-control">
+                            <option value="">No Subject</option>
+                            <option th:each="s : ${subjects}" th:value="${s.id}" th:text="${s.name}">Subject</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:4px">
+                        <label class="checkbox-label">
+                            <input type="checkbox" th:field="*{favorite}">
+                            ⭐ Mark as Favorite
+                        </label>
+                    </div>
+                </div>
+                <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:8px">
+                    <button type="button" onclick="closeModal('noteModal')" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Note</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- New Subject Modal -->
+    <div class="modal-overlay" id="subjectModal">
+        <div class="modal" style="max-width:400px">
+            <div class="modal-header">
+                <div class="modal-title">📚 Add Subject</div>
+                <button class="close-btn" onclick="closeModal('subjectModal')">✕</button>
+            </div>
+            <form th:action="@{/subjects/save}" method="post">
+                <div class="form-group">
+                    <label class="form-label">Subject Name *</label>
+                    <input type="text" name="name" class="form-control" placeholder="e.g. Mathematics, Physics..." required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Color</label>
+                    <select name="color" class="form-control">
+                        <option value="purple">Purple</option>
+                        <option value="blue">Blue</option>
+                        <option value="green">Green</option>
+                        <option value="red">Red</option>
+                        <option value="orange">Orange</option>
+                    </select>
+                </div>
+                <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:8px">
+                    <button type="button" onclick="closeModal('subjectModal')" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Subject</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirm Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal" style="max-width:380px;text-align:center">
+            <p style="font-size:40px;margin-bottom:12px">🗑️</p>
+            <h2 style="margin-bottom:8px">Delete Note?</h2>
+            <p style="color:#64748b;margin-bottom:24px">This action cannot be undone.</p>
+            <div style="display:flex;justify-content:center;gap:12px">
+                <button onclick="closeModal('deleteModal')" class="btn btn-secondary">Cancel</button>
+                <a id="deleteLink" href="#" class="btn btn-danger">Yes, Delete</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openModal(id) { document.getElementById(id).classList.add('open'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+        function confirmDelete(id) {
+            document.getElementById('deleteLink').href = '/notes/delete/' + id;
+            openModal('deleteModal');
+        }
+        window.addEventListener('click', function(e) {
+            document.querySelectorAll('.modal-overlay').forEach(m => {
+                if(e.target === m) m.classList.remove('open');
+            });
+        });
+    </script>
+</body>
+</html>

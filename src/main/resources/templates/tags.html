@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tags - NoteOrg</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',sans-serif;background:#f1f5f9;color:#1e293b;display:flex;min-height:100vh}
+        .sidebar{width:260px;background:#1e1b4b;color:white;display:flex;flex-direction:column;padding:24px 16px;position:fixed;height:100vh;overflow-y:auto}
+        .logo{display:flex;align-items:center;gap:10px;padding:8px 12px;margin-bottom:32px}
+        .logo-icon{width:36px;height:36px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px}
+        .logo-text{font-size:18px;font-weight:700;color:white}
+        .nav-section{font-size:11px;font-weight:600;color:#6366f1;text-transform:uppercase;letter-spacing:1px;padding:8px 12px;margin-top:16px}
+        .nav-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;transition:all 0.2s;margin-bottom:2px}
+        .nav-item:hover,.nav-item.active{background:#312e81;color:white}
+        .sidebar-footer{margin-top:auto;padding-top:16px;border-top:1px solid #312e81}
+        .user-info{display:flex;align-items:center;gap:10px;padding:10px 12px}
+        .avatar{width:36px;height:36px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:white;flex-shrink:0}
+        .user-name{font-size:13px;font-weight:600;color:white}
+        .user-email{font-size:11px;color:#6366f1}
+        .logout-btn{background:none;border:none;color:#94a3b8;cursor:pointer;padding:8px;border-radius:6px;font-size:13px;width:100%;text-align:left;margin-top:8px;transition:all 0.2s}
+        .logout-btn:hover{background:#312e81;color:white}
+        .main{margin-left:260px;padding:32px;flex:1}
+        .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px}
+        .page-header h1{font-size:24px;font-weight:700}
+        .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all 0.2s;text-decoration:none}
+        .btn-primary{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white}
+        .btn-primary:hover{opacity:0.9}
+        .btn-secondary{background:white;color:#1e293b;border:1px solid #e2e8f0}
+        .btn-danger{background:#fee2e2;color:#ef4444;border:none}
+        .tags-grid{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px}
+        .tag-card{background:white;border-radius:12px;padding:16px 20px;border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,0.06);display:flex;align-items:center;gap:12px;transition:all 0.2s}
+        .tag-card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(99,102,241,0.15);border-color:#6366f1}
+        .tag-dot{width:12px;height:12px;border-radius:50%;background:#6366f1;flex-shrink:0}
+        .tag-name{font-size:14px;font-weight:600;color:#1e293b}
+        .tag-delete{background:none;border:none;cursor:pointer;color:#94a3b8;font-size:16px;padding:4px;border-radius:4px;transition:all 0.2s;margin-left:8px;text-decoration:none}
+        .tag-delete:hover{background:#fee2e2;color:#ef4444}
+        .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+        .modal-overlay.open{display:flex}
+        .modal{background:white;border-radius:16px;padding:32px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,0.2)}
+        .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+        .modal-title{font-size:20px;font-weight:700}
+        .close-btn{background:none;border:none;font-size:20px;cursor:pointer;color:#64748b}
+        .form-group{margin-bottom:16px}
+        .form-label{display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px}
+        .form-control{width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;transition:border-color 0.2s}
+        .form-control:focus{outline:none;border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,0.1)}
+        .empty-state{text-align:center;padding:80px 20px;background:white;border-radius:16px;border:2px dashed #e2e8f0}
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-icon">N</div>
+            <span class="logo-text">NoteOrg</span>
+        </div>
+
+        <div class="nav-section">Main Menu</div>
+        <a th:href="@{/dashboard}" class="nav-item">
+            <span>🏠</span> Dashboard
+        </a>
+        <a th:href="@{/notes}" class="nav-item">
+            <span>📝</span> My Notes
+        </a>
+
+        <div class="nav-section">Organize</div>
+        <a th:href="@{/subjects}" class="nav-item">
+            <span>📚</span> Subjects
+        </a>
+        <a th:href="@{/tags}" class="nav-item active">
+            <span>🏷️</span> Tags
+        </a>
+
+        <div class="nav-section">Account</div>
+        <a th:href="@{/profile}" class="nav-item">
+            <span>⚙️</span> Settings
+        </a>
+
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="avatar" th:text="${#strings.substring(user.name,0,1)}">U</div>
+                <div>
+                    <div class="user-name" th:text="${user.name}">User</div>
+                    <div class="user-email" th:text="${user.email}">email</div>
+                </div>
+            </div>
+            <form th:action="@{/logout}" method="post">
+                <button type="submit" class="logout-btn">🚪 Logout</button>
+            </form>
+        </div>
+    </aside>
+
+    <main class="main">
+        <div class="page-header">
+            <div>
+                <h1>🏷️ Tags</h1>
+                <p style="color:#64748b;font-size:14px;margin-top:4px" th:text="${tags.size() + ' tags'}">0 tags</p>
+            </div>
+            <button onclick="openModal('tagModal')" class="btn btn-primary">+ New Tag</button>
+        </div>
+
+        <div class="tags-grid" th:if="${not #lists.isEmpty(tags)}">
+            <div th:each="tag : ${tags}" class="tag-card">
+                <div class="tag-dot"></div>
+                <span class="tag-name" th:text="${tag.name}">Tag Name</span>
+                <a th:href="@{/tags/delete/{id}(id=${tag.id})}"
+                   class="tag-delete"
+                   onclick="return confirm('Delete this tag?')"
+                   title="Delete">✕</a>
+            </div>
+        </div>
+
+        <div class="empty-state" th:if="${#lists.isEmpty(tags)}">
+            <p style="font-size:48px;margin-bottom:12px">🏷️</p>
+            <p style="color:#64748b;margin-bottom:16px">No tags yet. Create your first tag!</p>
+            <button onclick="openModal('tagModal')" class="btn btn-primary">+ Add Tag</button>
+        </div>
+    </main>
+
+    <!-- Tag Modal -->
+    <div class="modal-overlay" id="tagModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">🏷️ New Tag</div>
+                <button class="close-btn" onclick="closeModal('tagModal')">✕</button>
+            </div>
+            <form th:action="@{/tags/save}" method="post">
+                <div class="form-group">
+                    <label class="form-label">Tag Name *</label>
+                    <input type="text" name="name" class="form-control"
+                           placeholder="e.g. Important, Exam, Homework..." required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Color</label>
+                    <select name="color" class="form-control">
+                        <option value="purple">Purple</option>
+                        <option value="blue">Blue</option>
+                        <option value="green">Green</option>
+                        <option value="red">Red</option>
+                        <option value="orange">Orange</option>
+                        <option value="pink">Pink</option>
+                    </select>
+                </div>
+                <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:8px">
+                    <button type="button" onclick="closeModal('tagModal')" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Tag</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openModal(id) { document.getElementById(id).classList.add('open'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+        window.addEventListener('click', e => {
+            document.querySelectorAll('.modal-overlay').forEach(m => {
+                if(e.target === m) m.classList.remove('open');
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,212 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Settings - NoteOrg</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',sans-serif;background:#f1f5f9;color:#1e293b;display:flex;min-height:100vh}
+        .sidebar{width:260px;background:#1e1b4b;color:white;display:flex;flex-direction:column;padding:24px 16px;position:fixed;height:100vh;overflow-y:auto}
+        .logo{display:flex;align-items:center;gap:10px;padding:8px 12px;margin-bottom:32px}
+        .logo-icon{width:36px;height:36px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px}
+        .logo-text{font-size:18px;font-weight:700;color:white}
+        .nav-section{font-size:11px;font-weight:600;color:#6366f1;text-transform:uppercase;letter-spacing:1px;padding:8px 12px;margin-top:16px}
+        .nav-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;transition:all 0.2s;margin-bottom:2px}
+        .nav-item:hover,.nav-item.active{background:#312e81;color:white}
+        .sidebar-footer{margin-top:auto;padding-top:16px;border-top:1px solid #312e81}
+        .user-info{display:flex;align-items:center;gap:10px;padding:10px 12px}
+        .avatar{width:36px;height:36px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:white;flex-shrink:0}
+        .avatar-lg{width:80px;height:80px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:32px;color:white;margin:0 auto 16px}
+        .user-name{font-size:13px;font-weight:600;color:white}
+        .user-email{font-size:11px;color:#6366f1}
+        .logout-btn{background:none;border:none;color:#94a3b8;cursor:pointer;padding:8px;border-radius:6px;font-size:13px;width:100%;text-align:left;margin-top:8px;transition:all 0.2s}
+        .logout-btn:hover{background:#312e81;color:white}
+        .main{margin-left:260px;padding:32px;flex:1}
+        .page-header{margin-bottom:32px}
+        .page-header h1{font-size:24px;font-weight:700}
+        .page-header p{color:#64748b;font-size:14px;margin-top:4px}
+        .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+        .card{background:white;border-radius:16px;padding:28px;border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+        .card-full{grid-column:1/-1}
+        .card-title{font-size:16px;font-weight:700;color:#1e293b;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+        .card-subtitle{font-size:13px;color:#64748b;margin-bottom:24px}
+        .form-group{margin-bottom:16px}
+        .form-label{display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px}
+        .form-control{width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;color:#1e293b;transition:border-color 0.2s;background:white}
+        .form-control:focus{outline:none;border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,0.1)}
+        .form-control:disabled{background:#f8fafc;color:#94a3b8}
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all 0.2s}
+        .btn-primary{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white}
+        .btn-primary:hover{opacity:0.9;transform:translateY(-1px)}
+        .btn-danger{background:#fee2e2;color:#ef4444;border:1px solid #fecaca}
+        .alert{padding:12px 16px;border-radius:8px;font-size:14px;font-weight:500;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+        .alert-success{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0}
+        .alert-error{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}
+        .profile-hero{text-align:center;padding:24px 0 32px;border-bottom:1px solid #e2e8f0;margin-bottom:28px}
+        .profile-name{font-size:20px;font-weight:700;color:#1e293b;margin-bottom:4px}
+        .profile-email{font-size:14px;color:#64748b}
+        .profile-badge{display:inline-block;margin-top:8px;padding:4px 12px;background:#ede9fe;color:#6366f1;border-radius:20px;font-size:12px;font-weight:600}
+        .divider{height:1px;background:#e2e8f0;margin:20px 0}
+        .info-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f1f5f9}
+        .info-label{font-size:13px;color:#64748b}
+        .info-value{font-size:13px;font-weight:600;color:#1e293b}
+        .danger-zone{border:1px solid #fecaca;border-radius:16px;padding:28px;background:#fff5f5}
+        .danger-title{font-size:16px;font-weight:700;color:#dc2626;margin-bottom:4px}
+        .danger-desc{font-size:13px;color:#64748b;margin-bottom:16px}
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-icon">N</div>
+            <span class="logo-text">NoteOrg</span>
+        </div>
+        <div class="nav-section">Main Menu</div>
+        <a th:href="@{/dashboard}" class="nav-item">
+            <span>🏠</span> Dashboard
+        </a>
+        <a th:href="@{/notes}" class="nav-item">
+            <span>📝</span> My Notes
+        </a>
+        <div class="nav-section">Organize</div>
+        <a th:href="@{/subjects}" class="nav-item">
+            <span>📚</span> Subjects
+        </a>
+        <a th:href="@{/tags}" class="nav-item">
+            <span>🏷️</span> Tags
+        </a>
+        <div class="nav-section">Account</div>
+        <a th:href="@{/profile}" class="nav-item active">
+            <span>⚙️</span> Settings
+        </a>
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="avatar" th:text="${#strings.substring(user.name,0,1)}">U</div>
+                <div>
+                    <div class="user-name" th:text="${user.name}">User</div>
+                    <div class="user-email" th:text="${user.email}">email</div>
+                </div>
+            </div>
+            <form th:action="@{/logout}" method="post">
+                <button type="submit" class="logout-btn">🚪 Logout</button>
+            </form>
+        </div>
+    </aside>
+
+    <main class="main">
+        <div class="page-header">
+            <h1>⚙️ Profile Settings</h1>
+            <p>Manage your account information and preferences</p>
+        </div>
+
+        <!-- Alerts -->
+        <div th:if="${success}" class="alert alert-success">
+            ✅ <span th:text="${success}">Success</span>
+        </div>
+        <div th:if="${error}" class="alert alert-error">
+            ❌ <span th:text="${error}">Error</span>
+        </div>
+
+        <div class="settings-grid">
+
+            <!-- Profile Overview Card -->
+            <div class="card">
+                <div class="profile-hero">
+                    <div class="avatar-lg" th:text="${#strings.substring(user.name,0,1)}">U</div>
+                    <div class="profile-name" th:text="${user.name}">User Name</div>
+                    <div class="profile-email" th:text="${user.email}">email</div>
+                    <span class="profile-badge">Student</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">🏫 University</span>
+                    <span class="info-value" th:text="${user.university != null ? user.university : 'Not set'}">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">📅 Year</span>
+                    <span class="info-value" th:text="${user.year != null ? user.year : 'Not set'}">-</span>
+                </div>
+                <div class="info-row" style="border:none">
+                    <span class="info-label">📧 Email</span>
+                    <span class="info-value" th:text="${user.email}">-</span>
+                </div>
+            </div>
+
+            <!-- Edit Profile Card -->
+            <div class="card">
+                <div class="card-title">✏️ Edit Profile</div>
+                <div class="card-subtitle">Update your personal information</div>
+                <form th:action="@{/profile/update}" method="post">
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" name="name" class="form-control"
+                               th:value="${user.name}" required placeholder="Your full name">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" class="form-control"
+                               th:value="${user.email}" disabled>
+                        <small style="color:#94a3b8;font-size:12px">Email cannot be changed</small>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">University</label>
+                            <input type="text" name="university" class="form-control"
+                                   th:value="${user.university}" placeholder="Your university">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Year / Semester</label>
+                            <select name="year" class="form-control">
+                                <option value="">Select year</option>
+                                <option value="1st Year" th:selected="${user.year == '1st Year'}">1st Year</option>
+                                <option value="2nd Year" th:selected="${user.year == '2nd Year'}">2nd Year</option>
+                                <option value="3rd Year" th:selected="${user.year == '3rd Year'}">3rd Year</option>
+                                <option value="4th Year" th:selected="${user.year == '4th Year'}">4th Year</option>
+                                <option value="Masters" th:selected="${user.year == 'Masters'}">Masters</option>
+                                <option value="PhD" th:selected="${user.year == 'PhD'}">PhD</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center">
+                        💾 Save Changes
+                    </button>
+                </form>
+            </div>
+
+            <!-- Change Password Card -->
+            <div class="card card-full">
+                <div class="card-title">🔒 Change Password</div>
+                <div class="card-subtitle">Keep your account secure with a strong password</div>
+                <form th:action="@{/profile/change-password}" method="post">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Current Password</label>
+                            <input type="password" name="currentPassword" class="form-control"
+                                   placeholder="Enter current password" required>
+                        </div>
+                        <div class="form-group"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">New Password</label>
+                            <input type="password" name="newPassword" class="form-control"
+                                   placeholder="Min 6 characters" required minlength="6">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Confirm New Password</label>
+                            <input type="password" name="confirmPassword" class="form-control"
+                                   placeholder="Repeat new password" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        🔑 Update Password
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </main>
+</body>
+</html>
