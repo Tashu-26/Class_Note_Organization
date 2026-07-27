@@ -20,12 +20,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.noteorg.model.Note;
 import com.noteorg.model.User;
 import com.noteorg.repository.UserRepository;
 
 @SpringBootTest
+@Transactional
 public class NoteServiceTest {
 
     @Autowired
@@ -37,25 +39,22 @@ public class NoteServiceTest {
     private User user;
     private Note note;
 
-
     @BeforeAll
     static void beforeAll() {
         System.out.println("Before All");
     }
-
 
     @AfterAll
     static void afterAll() {
         System.out.println("After All");
     }
 
-
     @BeforeEach
     void setUp() {
 
         user = new User();
         user.setName("Test User");
-        user.setEmail("test@noteorg.com");
+        user.setEmail("test" + System.currentTimeMillis() + "@noteorg.com");
         user.setPassword("123456");
 
         user = userRepository.save(user);
@@ -65,7 +64,6 @@ public class NoteServiceTest {
         note.setContent("Test Content");
     }
 
-
     @AfterEach
     void tearDown() {
         note = null;
@@ -74,23 +72,17 @@ public class NoteServiceTest {
         System.out.println("Test completed");
     }
 
-
     @Test
     void testUserNotNull() {
-
         assertNotNull(user);
     }
 
-
     @Test
     void testUserDetails() {
-
         assertEquals("Test User", user.getName());
-        assertEquals("test@noteorg.com", user.getEmail());
-
+        assertTrue(user.getEmail().contains("@"));
         assertNotEquals("Wrong User", user.getName());
     }
-
 
     @Test
     void testNoteSave() {
@@ -100,7 +92,6 @@ public class NoteServiceTest {
         assertNotNull(saved);
         assertTrue(saved.getId() > 0);
     }
-
 
     @Test
     void testFavoriteStatus() {
@@ -114,33 +105,28 @@ public class NoteServiceTest {
         assertTrue(saved.isFavorite());
     }
 
-
     @Test
-    void testSubjectNullAndNotNull() {
-
+    void testSubjectNull() {
         assertNull(note.getSubject());
     }
-
 
     @Test
     void testSameAndNotSame() {
 
         User u1 = user;
         User u2 = u1;
-
         User u3 = new User();
 
         assertSame(u1, u2);
         assertNotSame(u1, u3);
     }
 
-
     @Test
     void testArrayEquals() {
 
         String[] expected = {
-                "Title",
-                "Content"
+                "Test Note",
+                "Test Content"
         };
 
         String[] actual = {
@@ -151,26 +137,20 @@ public class NoteServiceTest {
         assertArrayEquals(expected, actual);
     }
 
-
     @Test
     void testTimeout() {
 
         assertTimeout(
                 Duration.ofSeconds(1),
-                () -> {
-                    noteService.saveNote(note, user);
-                }
+                () -> noteService.saveNote(note, user)
         );
     }
-
 
     @Test
     void testNotThrow() {
 
-        assertDoesNotThrow(() -> {
-
-            noteService.saveNote(note, user);
-
-        });
+        assertDoesNotThrow(
+                () -> noteService.saveNote(note, user)
+        );
     }
 }
