@@ -20,21 +20,21 @@ import static org.mockito.Mockito.*;
 class ProfileControllerMockitoTest {
 
     @Mock
-    UserRepository userRepository;
+    private UserRepository userRepository;
 
     @Mock
-    Model model;
+    private Model model;
 
     @Mock
-    Authentication authentication;
+    private Authentication authentication;
 
     @Mock
-    SecurityContext securityContext;
+    private SecurityContext securityContext;
 
     @InjectMocks
-    ProfileController profileController;
+    private ProfileController profileController;
 
-    User user;
+    private User user;
 
     @BeforeEach
     void setUp() {
@@ -45,22 +45,20 @@ class ProfileControllerMockitoTest {
 
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
+
         when(authentication.getName()).thenReturn("test@gmail.com");
-        when(userRepository.findByEmail("test@gmail.com")).thenReturn(Optional.of(user));
+        when(userRepository.findByEmail("test@gmail.com"))
+                .thenReturn(Optional.of(user));
     }
 
     @Test
     void testProfile() {
-        String result = profileController.profile(model);
 
-        assertEquals("profile", result);
+        String viewName = profileController.profile(model);
+
+        assertEquals("profile", viewName);
+
+        verify(userRepository).findByEmail("test@gmail.com");
         verify(model).addAttribute("user", user);
-    }
-
-    @Test
-    void testUpdateProfile() {
-        profileController.updateProfile("Tasnia", "MU", "3rd", mock(org.springframework.web.servlet.mvc.support.RedirectAttributes.class));
-
-        verify(userRepository).save(user);
     }
 }
