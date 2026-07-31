@@ -2,14 +2,11 @@ package com.noteorg.controller;
 
 import com.noteorg.model.User;
 import com.noteorg.repository.UserRepository;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,25 +20,24 @@ import static org.mockito.Mockito.*;
 class ProfileControllerMockitoTest {
 
     @Mock
-    private UserRepository userRepository;
+    UserRepository userRepository;
 
     @Mock
-    private Model model;
+    Model model;
 
     @Mock
-    private Authentication authentication;
+    Authentication authentication;
 
     @Mock
-    private SecurityContext securityContext;
+    SecurityContext securityContext;
 
     @InjectMocks
-    private ProfileController profileController;
+    ProfileController profileController;
 
-    private User user;
+    User user;
 
     @BeforeEach
     void setUp() {
-
         MockitoAnnotations.openMocks(this);
 
         user = new User();
@@ -49,33 +45,22 @@ class ProfileControllerMockitoTest {
 
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
-
         when(authentication.getName()).thenReturn("test@gmail.com");
-
-        when(userRepository.findByEmail("test@gmail.com"))
-                .thenReturn(Optional.of(user));
+        when(userRepository.findByEmail("test@gmail.com")).thenReturn(Optional.of(user));
     }
 
     @Test
     void testProfile() {
-
         String result = profileController.profile(model);
 
         assertEquals("profile", result);
-
         verify(model).addAttribute("user", user);
-
     }
 
     @Test
-    void testCurrentUserFound() {
+    void testUpdateProfile() {
+        profileController.updateProfile("Tasnia", "MU", "3rd", mock(org.springframework.web.servlet.mvc.support.RedirectAttributes.class));
 
-        User currentUser = userRepository.findByEmail("test@gmail.com").orElse(null);
-
-        assertEquals(user, currentUser);
-
-        verify(userRepository).findByEmail("test@gmail.com");
-
+        verify(userRepository).save(user);
     }
-
 }
