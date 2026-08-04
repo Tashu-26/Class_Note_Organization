@@ -14,7 +14,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class DashboardStatsParameterizedTest {
 
-    // Test Subject names using @ValueSource
     @ParameterizedTest
     @ValueSource(strings = {
             "Software Engineering",
@@ -32,7 +31,6 @@ class DashboardStatsParameterizedTest {
         assertFalse(subject.getName().isBlank());
     }
 
-    // Test Task title and completion status using @CsvSource
     @ParameterizedTest
     @CsvSource({
             "Assignment,false",
@@ -51,7 +49,6 @@ class DashboardStatsParameterizedTest {
         assertEquals(completed, task.isCompleted());
     }
 
-    // Method source for Subject colors
     static Stream<String> subjectColors() {
 
         return Stream.of(
@@ -62,7 +59,6 @@ class DashboardStatsParameterizedTest {
         );
     }
 
-    // Test Subject color using @MethodSource
     @ParameterizedTest
     @MethodSource("subjectColors")
     void testSubjectColor(String color) {
