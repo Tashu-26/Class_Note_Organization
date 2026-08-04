@@ -6,11 +6,9 @@ import com.noteorg.model.User;
 
 public class NoteFactory {
 
-    // Private constructor to prevent creating objects of this class
     private NoteFactory() {
     }
 
-     // Creates and initializes a Note object.
   
     public static Note createNote(String title, String content,
                                   Subject subject, User user) {
